@@ -15,6 +15,10 @@
  */
 package org.saiku.query.mdx;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.olap4j.mdx.CallNode;
 import org.olap4j.mdx.HierarchyNode;
 import org.olap4j.mdx.LiteralNode;
@@ -23,14 +27,8 @@ import org.olap4j.mdx.Syntax;
 import org.olap4j.mdx.parser.MdxParser;
 import org.olap4j.metadata.Hierarchy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class NameFilter extends AbstractFilterFunction {
 
-	private String operator = " = ";
-	private String op;
 	private List<String> filterExpression = new ArrayList<String>();
 	private MdxFunctionType type;
 	private Hierarchy hierarchy;
@@ -48,29 +46,12 @@ public class NameFilter extends AbstractFilterFunction {
 		this.type = MdxFunctionType.Filter;
 	}
 
-	public NameFilter(Hierarchy hierarchy, List<String> matchingExpression, String operator) {
-		this.hierarchy = hierarchy;
-		this.filterExpression.addAll(matchingExpression);
-		this.type = MdxFunctionType.Filter;
-		this.op = operator;
-		if(operator!=null && operator.equals("NOTEQUAL")){
-			this.operator = " <> ";
-		}
-	}
-
 	@Override
 	public List<ParseTreeNode> getArguments(MdxParser parser) {
 		List<ParseTreeNode> filters = new ArrayList<ParseTreeNode>();
 		List<ParseTreeNode> arguments = new ArrayList<ParseTreeNode>();
 		ParseTreeNode h =  new HierarchyNode(null, hierarchy);
-		for (int i = 0; i< filterExpression.size(); i++) {
-			String filter = filterExpression.get(i);
-
-			String o = operator;
-			if(filterExpression.size()>1 && i == 0){
-				o = " = ";
-			}
-
+		for (String filter : filterExpression) {
 			ParseTreeNode filterExp =  LiteralNode.createString(null, filter);
 			CallNode currentMemberNode =
 					new CallNode(
@@ -88,7 +69,7 @@ public class NameFilter extends AbstractFilterFunction {
 			CallNode filterNode = 
 					new CallNode(
 							null,
-							o,
+							" = ",
 							Syntax.Infix,
 							currentMemberNameNode,
 							filterExp);
@@ -130,9 +111,5 @@ public class NameFilter extends AbstractFilterFunction {
 	 */
 	public Hierarchy getHierarchy() {
 		return hierarchy;
-	}
-
-	public String getOp() {
-		return op;
 	}
 }

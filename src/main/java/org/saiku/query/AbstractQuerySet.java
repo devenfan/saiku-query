@@ -15,7 +15,6 @@
  */package org.saiku.query;
 
 import org.apache.commons.lang.StringUtils;
-
 import org.saiku.query.mdx.IFilterFunction;
 
 import java.util.ArrayList;
@@ -53,20 +52,6 @@ public abstract class AbstractQuerySet implements IQuerySet {
 	 */
 	@Override
 	public String getMdxSetExpression() {
-      /*StringBuilder buffer = new StringBuilder();
-      Iterator it = this.mdxExpression.entrySet().iterator();
-
-      while (it.hasNext()) {
-        Map.Entry pairs = (Map.Entry)it.next();
-        buffer.append((String) pairs.getValue());
-        if ( it.hasNext()) {
-          buffer.append(" * ");
-        }
-
-        it.remove(); // avoids a ConcurrentModificationException
-      }
-
-      String mdx = buffer.toString();*/
 		return this.mdxExpression;
 	}
 	

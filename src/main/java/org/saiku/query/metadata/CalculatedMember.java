@@ -15,25 +15,28 @@
  */
 package org.saiku.query.metadata;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.olap4j.OlapException;
 import org.olap4j.impl.Named;
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.mdx.ParseTreeNode;
-import org.olap4j.metadata.*;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Measure.Aggregator;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.Property;
 
 public class CalculatedMember implements Member, Named, Calculated {
 
 
-
-	private final Member parentMember;
 	private Dimension dimension;
 	private Hierarchy hierarchy;
 	private String name;
@@ -45,30 +48,6 @@ public class CalculatedMember implements Member, Named, Calculated {
 	private String description;
 	private Level level;
 
-	public CalculatedMember(
-			Dimension dimension,
-			Hierarchy hierarchy,
-			String name,
-			String description,
-			Member parentMember,
-			Type memberType,
-			String formula,
-			Map<String, String> properties, String l, boolean mondrian3)
-	{
-		this(dimension,hierarchy,name,description,parentMember,memberType,formula,properties,mondrian3);
-		if(l!=null && !l.equals("")) {
-			for(Level level:hierarchy.getLevels()){
-				if(level.getUniqueName().equals(l)){
-					this.level = level;
-				}
-			}
-
-		}
-		else{
-			this.level = hierarchy.getLevels().get(0);
-
-		}
-	}
 
 	public CalculatedMember(
 			Dimension dimension,
@@ -78,7 +57,7 @@ public class CalculatedMember implements Member, Named, Calculated {
 			Member parentMember,
 			Type memberType,
 			String formula,
-			Map<String, String> properties, boolean mondrian3)
+			Map<String, String> properties)
 	{
 		this.dimension = dimension;
 		this.hierarchy = hierarchy;
@@ -88,14 +67,7 @@ public class CalculatedMember implements Member, Named, Calculated {
 		this.memberType = memberType;
 		this.formula = formula;
 		if (parentMember == null) {
-			if(mondrian3){
-				this.uniqueName = IdentifierNode.ofNames(hierarchy.getName(), name).toString();
-
-			}
-			else {
-				this.uniqueName = IdentifierNode.ofNames(hierarchy.getDimension().getName(), hierarchy.getName(), name)
-												.toString();
-			}
+			this.uniqueName = IdentifierNode.ofNames(hierarchy.getName(), name).toString();
 		} else {
 			IdentifierNode parent = IdentifierNode.parseIdentifier(parentMember.getUniqueName());
 			IdentifierNode cm = IdentifierNode.ofNames(name);
@@ -112,7 +84,6 @@ public class CalculatedMember implements Member, Named, Calculated {
 	        this.uniqueName = buf.toString();
 
 		}
-		this.parentMember = parentMember;
 		if (properties != null) {
 			this.properties.putAll(properties);
 		}
@@ -250,7 +221,7 @@ public class CalculatedMember implements Member, Named, Calculated {
 
 	@Override
 	public Member getParentMember() {
-		return parentMember;
+		throw new UnsupportedOperationException();
 	}
 
 
@@ -309,9 +280,8 @@ public class CalculatedMember implements Member, Named, Calculated {
 	 */
 	@Deprecated
 	public NamedList<Property> getProperties() {
-	  NamedList l = new NamedListImpl(properties.entrySet());
-	  return l;
-
+		NamedList<Property> l = new NamedListImpl();
+		return l;
 	}
 
 

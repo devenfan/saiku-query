@@ -59,18 +59,11 @@
     <Hierarchy hasAll="false" primaryKey="time_id">
       <Table name="time_by_day"/>
       <Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"
-          levelType="TimeYears">
-        <Annotations><Annotation name="AnalyzerDateFormat">[yyyy]</Annotation></Annotations>
-        </Level>
+          levelType="TimeYears"/>
       <Level name="Quarter" column="quarter" uniqueMembers="false"
-          levelType="TimeQuarters">
-          <Annotations><Annotation name="AnalyzerDateFormat">[yyyy].['QTR'q]</Annotation></Annotations>
-      </Level>
+          levelType="TimeQuarters"/>
       <Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"
-          levelType="TimeMonths">
-          <Annotations><Annotation name="AnalyzerDateFormat">[yyyy].['QTR'q].[M]</Annotation></Annotations>
-
-      </Level>
+          levelType="TimeMonths"/>
     </Hierarchy>
     <Hierarchy hasAll="true" name="Weekly" primaryKey="time_id">
       <Table name="time_by_day"/>

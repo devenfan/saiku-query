@@ -1,5 +1,20 @@
 package org.saiku.query;
 
+import junit.framework.TestCase;
+
+import org.olap4j.Axis;
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapWrapper;
+import org.olap4j.impl.IdentifierParser;
+import org.olap4j.mdx.SelectNode;
+import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Measure;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.Schema;
 import org.saiku.query.ISortableQuerySet.HierarchizeMode;
 import org.saiku.query.QueryDetails.Location;
 import org.saiku.query.mdx.GenericFilter;
@@ -9,17 +24,6 @@ import org.saiku.query.mdx.NameFilter;
 import org.saiku.query.mdx.NameLikeFilter;
 import org.saiku.query.metadata.CalculatedMeasure;
 import org.saiku.query.metadata.CalculatedMember;
-
-import org.olap4j.Axis;
-import org.olap4j.CellSet;
-import org.olap4j.OlapConnection;
-import org.olap4j.OlapWrapper;
-import org.olap4j.impl.IdentifierParser;
-import org.olap4j.mdx.SelectNode;
-import org.olap4j.metadata.*;
-
-import junit.framework.TestCase;
-import mondrian.olap4j.MondrianOlap4jLevel;
 
 public class QueryTest extends TestCase {
 
@@ -306,51 +310,7 @@ public class QueryTest extends TestCase {
 			fail();
 		}
 	}
-
-    public void testBasicTimeFilter(){
-      try{
-        Cube cube = getFoodmartCube("Sales");
-        Query query = new Query("my query", cube);
-        QueryAxis columns = query.getAxis(Axis.COLUMNS);
-        QueryAxis rows = query.getAxis(Axis.ROWS);
-        QueryHierarchy products = query.getHierarchy("[Time]");
-
-
-        MondrianOlap4jLevel l = ((MondrianOlap4jLevel)products.getHierarchy().getLevels().get("Month"));
-
-
-
-
-        products = query.createTimeLag(products, l, 2);
-
-
-        QueryHierarchy edu = query.getHierarchy("[Education Level]");
-        edu.includeLevel("Education Level");
-        columns.addHierarchy(edu);
-
-        products.includeLevel("Year");
-
-        columns.addHierarchy(products);
-
-
-
-        QueryHierarchy h2 = query.getHierarchy("[Promotions]");
-        h2.includeLevel("Promotion Name");
-        rows.addHierarchy(h2);
-        QueryHierarchy gender = query.getHierarchy("[Gender]");
-        gender.includeMember("[Gender].[F]");
-        rows.addHierarchy(gender);
-
-
-        SelectNode mdx = query.getSelect();
-String str = mdx.toString();
-        System.out.println(mdx.toString());
-      }
-      catch(Exception e){
-
-        System.out.println(e.getLocalizedMessage());
-      }
-    }
+	
 	public void testBasicCalculatedMember() {
 
 		try {
@@ -364,9 +324,9 @@ String str = mdx.toString();
 							products, 
 							"Consumable", 
 							"Aggregate({Product.Drink, Product.Food})",  
-							null, true);
+							null);
 
-			products.includeCalculatedMember(cm, false);
+			products.includeCalculatedMember(cm);
 			products.includeLevel("Product Family");
 			products.excludeMember("[Product].[Non-Consumable]");
 			NFilter top2filter = new NFilter(MdxFunctionType.TopCount, 2, "Measures.[Unit Sales]");
@@ -456,10 +416,10 @@ String str = mdx.toString();
 							products,
 							parent,
 							"BeverageDairy", 
-							"Aggregate({[Product].[Drink].[Beverages], [Product].[Drink].[Dairy]})",
-							null,true);
+							"Aggregate({[Product].[Drink].[Beverages], [Product].[Drink].[Dairy]})",  
+							null);
 
-			products.includeCalculatedMember(cm, false);
+			products.includeCalculatedMember(cm);
 			columns.addHierarchy(products);
 
 			QueryHierarchy gender = query.getHierarchy("[Gender]");

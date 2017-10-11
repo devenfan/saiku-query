@@ -15,19 +15,6 @@
  */
 package org.saiku.query;
 
-import org.saiku.query.ISortableQuerySet.HierarchizeMode;
-import org.saiku.query.metadata.CalculatedMeasure;
-import org.saiku.query.metadata.CalculatedMember;
-import org.saiku.query.util.QueryUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.olap4j.*;
-import org.olap4j.impl.NamedListImpl;
-import org.olap4j.mdx.ParseTreeWriter;
-import org.olap4j.mdx.SelectNode;
-import org.olap4j.metadata.*;
-import org.olap4j.metadata.Member.Type;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -37,8 +24,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mondrian.olap.Annotation;
-import mondrian.olap4j.MondrianOlap4jLevel;
+import org.apache.commons.lang.StringUtils;
+import org.olap4j.Axis;
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.OlapStatement;
+import org.olap4j.impl.NamedListImpl;
+import org.olap4j.mdx.ParseTreeWriter;
+import org.olap4j.mdx.SelectNode;
+import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Measure;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.Member.Type;
+import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.Property;
+import org.saiku.query.ISortableQuerySet.HierarchizeMode;
+import org.saiku.query.metadata.CalculatedMeasure;
+import org.saiku.query.metadata.CalculatedMember;
+import org.saiku.query.util.QueryUtil;
 
 public class Query {
 
@@ -67,8 +74,8 @@ public class Query {
 	private boolean lowestLevelsOnly = false;
 	private Map<String, String> parameters = new HashMap<String, String>();
 	private Map<String, List<String>> aggregators = new HashMap<String, List<String>>();
-
-  /**
+	
+    /**
      * Constructs a Query object.
      * @param name Any arbitrary name to give to this query.
      * @param cube A Cube object against which to build a query.
@@ -194,7 +201,7 @@ public class Query {
         QueryHierarchy h =  hierarchyMap.get(hierarchy.getUniqueName());
         return h.getActiveLevel(name);
     }
-
+    
     /**
      * Returns the Olap4j's QueryLevel object according to the Level
      * given as a parameter. If no Level of the given name is found,
@@ -287,7 +294,7 @@ public class Query {
     		QueryHierarchy hierarchy,
     		String name,
     		String formula,
-    		Map<Property, Object> properties, boolean mondrian3)
+    		Map<Property, Object> properties) 
     {
     	Hierarchy h = hierarchy.getHierarchy();
     	CalculatedMember cm = new CalculatedMember(
@@ -298,7 +305,7 @@ public class Query {
     			null,
     			Type.FORMULA,
     			formula,
-    			null, mondrian3);
+    			null);
     	addCalculatedMember(hierarchy, cm);
     	return cm;
     }
@@ -308,7 +315,7 @@ public class Query {
     		Member parentMember,
     		String name,
     		String formula,
-    		Map<Property, Object> properties, boolean mondrian3)
+    		Map<Property, Object> properties) 
     {
     	Hierarchy h = hierarchy.getHierarchy();
     	CalculatedMember cm = new CalculatedMember(
@@ -319,7 +326,7 @@ public class Query {
     			parentMember,
     			Type.FORMULA,
     			formula,
-    			null, mondrian3);
+    			null);
     	addCalculatedMember(hierarchy, cm);
     	return cm;
     }
@@ -358,9 +365,7 @@ public class Query {
     		String formula,
     		Map<Property, Object> properties) 
     {
-
-
-      CalculatedMeasure cm = new CalculatedMeasure(
+    	CalculatedMeasure cm = new CalculatedMeasure(
     			measureHierarchy, 
     			name, 
     			name,
@@ -382,31 +387,8 @@ public class Query {
     public CalculatedMeasure getCalculatedMeasure(String name) {
     	return calculatedMeasures.get(name);
     }
-
-    public QueryHierarchy createTimeLag(QueryHierarchy hierarchy, MondrianOlap4jLevel level, int amount) {
-
-
-      Map<String, Annotation> a = level.getAnnotations();
-      Annotation v;
-      if(a.containsKey("AnalyzerDateFormat")) {
-        v = a.get("AnalyzerDateFormat");
-
-
-        hierarchy.setMdxSetExpression("(CurrentDateMember(" + hierarchy.getUniqueName() + ", \"" +
-                                      hierarchy.getUniqueName() + "\\" +
-                                      "." + v.getValue() + "\").Lag(" + String.valueOf(amount) + ") : CurrentDateMember"
-                                      +
-                                      "(" + hierarchy.getUniqueName() + "," +
-                                      "\"" + hierarchy.getUniqueName() + "\\." + v.getValue() + "\"))");
-      }
-      else{
-        System.out.println("Can't do this");
-      }
-      return hierarchy;
-    }
-
-
-  public Measure getMeasure(String name) {
+    
+    public Measure getMeasure(String name) {
     	for (Measure m : cube.getMeasures()) {
     		if (name != null && name.equals(m.getName())) {
     			return m;
